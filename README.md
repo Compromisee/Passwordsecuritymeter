@@ -19,7 +19,7 @@ A Python-based terminal tool that evaluates password strength using a custom sco
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/Compromisee/Passwordsecuritymeter.git
-   cd password-analyzer
+   cd passwordmeter
    ```
 
 2. **Install dependencies:**
