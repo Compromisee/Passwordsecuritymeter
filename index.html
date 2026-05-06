@@ -1,0 +1,2630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Fortress</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111111;
+            --surface2: #1a1a1a;
+            --surface3: #141414;
+            --border: #1e1e1e;
+            --border-hover: #2a2a2a;
+            --text: #e8e8e8;
+            --text-dim: #555;
+            --text-muted: #333;
+            --accent: #7c5bf5;
+            --accent-dim: rgba(124,91,245,0.1);
+            --accent2: #f5715c;
+            --accent3: #5bf5a8;
+            --green: #34d399;
+            --green-dim: rgba(52,211,153,0.1);
+            --red: #f87171;
+            --red-dim: rgba(248,113,113,0.08);
+            --yellow: #fbbf24;
+            --orange: #fb923c;
+            --cyan: #22d3ee;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #222 var(--bg);
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* ═══════════════════════════════════════
+           CURSOR
+        ═══════════════════════════════════════ */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 1.5px solid var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            transition: width 0.25s ease, height 0.25s ease, border-color 0.25s, background 0.25s, opacity 0.25s;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            opacity: 0;
+        }
+
+        .cursor.visible { opacity: 1; }
+
+        .cursor-dot {
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10001;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .cursor-dot.visible { opacity: 1; }
+
+        .cursor.hover {
+            width: 48px;
+            height: 48px;
+            background: rgba(124, 91, 245, 0.06);
+            border-color: rgba(124, 91, 245, 0.4);
+        }
+
+        .cursor.clicking {
+            transform: translate(-50%, -50%) scale(0.85);
+        }
+
+        .cursor-trail {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--accent);
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+        }
+
+        /* ═══════════════════════════════════════
+           GRAIN + GRID + SPLASHES
+        ═══════════════════════════════════════ */
+        .grain-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.025;
+        }
+
+        .grain-overlay::before {
+            content: '';
+            position: absolute;
+            inset: -200%;
+            width: 500%;
+            height: 500%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            animation: grain 0.4s steps(1) infinite;
+        }
+
+        @keyframes grain {
+            0%   { transform: translate(0,0); }
+            10%  { transform: translate(-5%,-10%); }
+            20%  { transform: translate(-15%,5%); }
+            30%  { transform: translate(7%,-25%); }
+            40%  { transform: translate(-5%,25%); }
+            50%  { transform: translate(-15%,10%); }
+            60%  { transform: translate(15%,0%); }
+            70%  { transform: translate(0%,15%); }
+            80%  { transform: translate(3%,35%); }
+            90%  { transform: translate(-10%,10%); }
+            100% { transform: translate(0,0); }
+        }
+
+        .dot-matrix {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.08;
+            background-image: radial-gradient(circle, #444 0.6px, transparent 0.6px);
+            background-size: 20px 20px;
+        }
+
+        .gradient-splash {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(140px);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .splash-1 {
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(124,91,245,0.12), transparent 70%);
+            top: -200px; right: -200px;
+            animation: float1 22s ease-in-out infinite;
+        }
+        .splash-2 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(245,113,92,0.08), transparent 70%);
+            bottom: -150px; left: -150px;
+            animation: float2 28s ease-in-out infinite;
+        }
+        .splash-3 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(91,245,168,0.06), transparent 70%);
+            top: 40%; left: 40%;
+            animation: float3 20s ease-in-out infinite;
+        }
+
+        @keyframes float1 {
+            0%,100% { transform: translate(0,0) scale(1); }
+            33% { transform: translate(-80px,60px) scale(1.15); }
+            66% { transform: translate(40px,-40px) scale(0.85); }
+        }
+        @keyframes float2 {
+            0%,100% { transform: translate(0,0) scale(1); }
+            33% { transform: translate(60px,-40px) scale(1.1); }
+            66% { transform: translate(-30px,30px) scale(0.9); }
+        }
+        @keyframes float3 {
+            0%,100% { transform: translate(-50%,-50%) scale(1); }
+            50% { transform: translate(-30%,-60%) scale(1.25); }
+        }
+
+        /* ═══════════════════════════════════════
+           PARALLAX SHAPES
+        ═══════════════════════════════════════ */
+        .parallax-shape {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.07;
+            transition: transform 0.1s linear;
+        }
+
+        .parallax-shape.circle {
+            width: 180px; height: 180px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+        }
+        .parallax-shape.square {
+            width: 80px; height: 80px;
+            border: 1px solid var(--accent2);
+            transform: rotate(45deg);
+        }
+        .parallax-shape.cross {
+            width: 50px; height: 50px;
+        }
+        .parallax-shape.cross::before,
+        .parallax-shape.cross::after {
+            content: ''; position: absolute; background: var(--accent3);
+        }
+        .parallax-shape.cross::before { width: 100%; height: 1px; top: 50%; }
+        .parallax-shape.cross::after { width: 1px; height: 100%; left: 50%; }
+
+        /* ═══════════════════════════════════════
+           NAVIGATION
+        ═══════════════════════════════════════ */
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            padding: 0 2rem;
+            height: 56px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            background: rgba(10,10,10,0.75);
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.4s;
+        }
+
+        .nav.scrolled { border-bottom-color: var(--border); }
+
+        .nav-logo {
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 30px; height: 30px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.78rem;
+            font-weight: 400;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.01em;
+        }
+
+        .nav-links a .material-symbols-rounded {
+            font-size: 16px;
+            opacity: 0.6;
+        }
+
+        .nav-links a:hover { color: var(--text); }
+
+        /* ═══════════════════════════════════════
+           ANIMATIONS
+        ═══════════════════════════════════════ */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.7); }
+        }
+        @keyframes scrollDown {
+            0% { top: -50%; }
+            100% { top: 150%; }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ═══════════════════════════════════════
+           HERO
+        ═══════════════════════════════════════ */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 2rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px 5px 10px;
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 2.5rem;
+            animation: fadeInDown 0.7s ease;
+            backdrop-filter: blur(8px);
+            background: rgba(17,17,17,0.4);
+        }
+
+        .hero-badge .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s ease infinite;
+        }
+
+        .hero-title {
+            font-size: clamp(3.2rem, 9vw, 7.5rem);
+            font-weight: 900;
+            text-align: center;
+            line-height: 0.92;
+            letter-spacing: -0.045em;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.7s ease 0.1s both;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.05rem;
+            color: var(--text-dim);
+            text-align: center;
+            max-width: 440px;
+            line-height: 1.65;
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.7s ease 0.2s both;
+            font-weight: 300;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            animation: fadeInUp 0.7s ease 0.35s both;
+        }
+
+        .btn-primary {
+            padding: 0.75rem 1.8rem;
+            background: linear-gradient(135deg, var(--accent), #6344d4);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: none;
+            transition: transform 0.2s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(124,91,245,0.25);
+        }
+
+        .btn-ghost {
+            padding: 0.75rem 1.8rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: none;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--border-hover);
+            color: var(--text);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            animation: fadeInUp 0.7s ease 0.6s both;
+        }
+
+        .scroll-indicator span {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-muted);
+        }
+
+        .scroll-line {
+            width: 1px; height: 36px;
+            background: var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .scroll-line::after {
+            content: '';
+            position: absolute;
+            top: -100%; left: 0;
+            width: 100%; height: 50%;
+            background: var(--accent);
+            animation: scrollDown 2s ease infinite;
+        }
+
+        /* ═══════════════════════════════════════
+           SECTIONS
+        ═══════════════════════════════════════ */
+        .section {
+            padding: 7rem 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .section-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-label .material-symbols-rounded {
+            font-size: 14px;
+        }
+
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.75rem;
+            line-height: 1.1;
+        }
+
+        .section-desc {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            max-width: 520px;
+            line-height: 1.7;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: var(--border);
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* ═══════════════════════════════════════
+           CAROUSEL
+        ═══════════════════════════════════════ */
+        .horizontal-section {
+            padding: 7rem 0;
+            overflow: hidden;
+        }
+
+        .horizontal-section .section-header {
+            padding: 0 2rem;
+            max-width: 1100px;
+            margin: 0 auto 3rem;
+        }
+
+        .carousel-track {
+            display: flex;
+            gap: 1.25rem;
+            padding: 0 2rem;
+            animation: scrollCarousel 35s linear infinite;
+            width: max-content;
+        }
+
+        .carousel-track:hover { animation-play-state: paused; }
+
+        @keyframes scrollCarousel {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .feature-card {
+            flex-shrink: 0;
+            width: 280px;
+            padding: 2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--border-hover);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .feature-card .feature-icon {
+            width: 40px; height: 40px;
+            background: var(--accent-dim);
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 1.25rem;
+            color: var(--accent);
+        }
+
+        .feature-card .feature-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card .feature-desc {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        /* ═══════════════════════════════════════
+           ANALYZER
+        ═══════════════════════════════════════ */
+        .card-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.5;
+        }
+
+        .card-container.accent2::before {
+            background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+        }
+
+        .card-container.accent3::before {
+            background: linear-gradient(90deg, transparent, var(--accent3), transparent);
+        }
+
+        .password-input-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 1rem 3.5rem 1rem 1.25rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .password-input:focus {
+            border-color: rgba(124,91,245,0.4);
+            box-shadow: 0 0 0 4px rgba(124,91,245,0.06);
+        }
+
+        .password-input::placeholder { color: var(--text-muted); }
+
+        .toggle-visibility {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: none;
+            padding: 6px;
+            transition: color 0.3s;
+            display: grid;
+            place-items: center;
+        }
+
+        .toggle-visibility:hover { color: var(--text-dim); }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, var(--accent), #6344d4);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            cursor: none;
+            transition: transform 0.2s, box-shadow 0.3s;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(124,91,245,0.25);
+        }
+
+        .analyze-btn:active { transform: translateY(0); }
+
+        /* ═══════════════════════════════════════
+           RESULTS
+        ═══════════════════════════════════════ */
+        .results-panel {
+            margin-top: 2rem;
+            display: none;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .results-panel.active { display: block; }
+
+        .score-display {
+            text-align: center;
+            padding: 2.5rem 0 1.5rem;
+        }
+
+        .score-circle-wrap {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 1rem;
+        }
+
+        .score-circle-bg, .score-circle-fg {
+            position: absolute;
+            inset: 0;
+            fill: none;
+            stroke-width: 4;
+        }
+
+        .score-circle-bg { stroke: var(--surface2); }
+
+        .score-circle-fg {
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.2s ease, stroke 0.5s;
+            transform: rotate(-90deg);
+            transform-origin: center;
+        }
+
+        .score-number {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            font-size: 3.2rem;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .score-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-dim);
+        }
+
+        .strength-bar-container {
+            width: 100%;
+            height: 3px;
+            background: var(--surface2);
+            border-radius: 2px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .strength-bar {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 1s ease, background 0.5s;
+            width: 0%;
+        }
+
+        .strength-label {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 2rem;
+        }
+
+        /* ═══════════════════════════════════════
+           METRICS GRID
+        ═══════════════════════════════════════ */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .metric-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-hover);
+        }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .metric-header .material-symbols-rounded {
+            font-size: 18px;
+            opacity: 0.5;
+        }
+
+        .metric-card .metric-name {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+        }
+
+        .metric-card .metric-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.15rem;
+        }
+
+        .metric-card .metric-detail {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        .metric-card .metric-bar {
+            width: 100%;
+            height: 2px;
+            background: var(--surface2);
+            margin-top: 0.75rem;
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .metric-card .metric-bar-fill {
+            height: 100%;
+            border-radius: 1px;
+            transition: width 0.8s ease;
+        }
+
+        /* ═══════════════════════════════════════
+           LOG
+        ═══════════════════════════════════════ */
+        .log-panel {
+            margin-top: 1.5rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .log-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-dim);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .log-title .live-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 1.5s ease infinite;
+        }
+
+        .log-entry {
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            animation: fadeInUp 0.25s ease;
+        }
+
+        .log-entry:last-child { border-bottom: none; }
+
+        .log-type {
+            padding: 2px 7px;
+            border-radius: 3px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .log-type.gain { background: var(--green-dim); color: var(--green); }
+        .log-type.loss { background: var(--red-dim); color: var(--red); }
+        .log-type.info { background: var(--accent-dim); color: var(--accent); }
+
+        .log-message { color: var(--text-dim); line-height: 1.3; flex: 1; }
+
+        .log-points { margin-left: auto; font-weight: 600; flex-shrink: 0; }
+
+        /* ═══════════════════════════════════════
+           PATTERN WARNING + SUGGESTIONS
+        ═══════════════════════════════════════ */
+        .pattern-warning {
+            margin-top: 1rem;
+            padding: 0.7rem 1rem;
+            background: var(--red-dim);
+            border: 1px solid rgba(248,113,113,0.12);
+            border-radius: 8px;
+            font-size: 0.78rem;
+            color: var(--red);
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pattern-warning.active {
+            display: flex;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 1.25rem;
+        }
+
+        .suggestion-chip {
+            padding: 0.35rem 0.7rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chip-dot {
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ═══════════════════════════════════════
+           GENERATOR
+        ═══════════════════════════════════════ */
+        .generated-password-display {
+            width: 100%;
+            padding: 1.25rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 1.25rem;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            word-break: break-all;
+            letter-spacing: 0.04em;
+            line-height: 1.4;
+        }
+
+        .placeholder-text { color: var(--text-muted); font-size: 0.85rem; }
+
+        .gen-actions {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .gen-btn {
+            flex: 1;
+            padding: 0.7rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: none;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .gen-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text);
+        }
+
+        .gen-btn .material-symbols-rounded { font-size: 16px; }
+
+        .gen-btn.primary {
+            background: linear-gradient(135deg, var(--accent3), #3db882);
+            border: none;
+            color: #0a0a0a;
+            font-weight: 700;
+        }
+
+        .gen-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(91,245,168,0.15);
+        }
+
+        .gen-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+        }
+
+        .gen-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.85rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        .gen-option:hover { border-color: var(--border-hover); }
+
+        .gen-option label {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            cursor: none;
+        }
+
+        .slider-option { grid-column: 1 / -1; }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.6rem;
+        }
+
+        .slider-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .custom-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 3px;
+            background: var(--surface2);
+            border-radius: 2px;
+            outline: none;
+            cursor: none;
+        }
+
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px; height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .custom-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 6px rgba(124,91,245,0.12);
+        }
+
+        /* ═══════════════════════════════════════
+           TOGGLE
+        ═══════════════════════════════════════ */
+        .toggle {
+            width: 36px; height: 20px;
+            background: var(--surface2);
+            border-radius: 10px;
+            position: relative;
+            cursor: none;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+
+        .toggle.active { background: var(--accent); }
+
+        .toggle::after {
+            content: '';
+            width: 14px; height: 14px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px; left: 3px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toggle.active::after { transform: translateX(16px); }
+
+        /* ═══════════════════════════════════════
+           BULK TESTER
+        ═══════════════════════════════════════ */
+        .tab-nav {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.7rem;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: none;
+            transition: all 0.3s;
+            border-right: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .tab-btn:last-child { border-right: none; }
+        .tab-btn.active { background: var(--accent); color: white; }
+        .tab-btn:hover:not(.active) { background: var(--surface2); }
+        .tab-btn .material-symbols-rounded { font-size: 16px; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeInUp 0.25s ease; }
+
+        .bulk-textarea {
+            width: 100%;
+            min-height: 140px;
+            padding: 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s;
+            line-height: 1.6;
+        }
+
+        .bulk-textarea:focus { border-color: rgba(124,91,245,0.3); }
+        .bulk-textarea::placeholder { color: var(--text-muted); }
+
+        .file-upload {
+            width: 100%;
+            padding: 2.5rem;
+            border: 1.5px dashed var(--border);
+            border-radius: 10px;
+            text-align: center;
+            cursor: none;
+            transition: all 0.3s;
+            background: var(--bg);
+        }
+
+        .file-upload:hover {
+            border-color: var(--accent);
+            background: rgba(124,91,245,0.02);
+        }
+
+        .file-upload .upload-icon {
+            font-size: 32px;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .file-upload .upload-text { font-size: 0.82rem; color: var(--text-dim); }
+        .file-upload .upload-formats { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.4rem; }
+        .file-upload input[type="file"] { display: none; }
+
+        /* ═══════════════════════════════════════
+           BULK RESULTS TABLE
+        ═══════════════════════════════════════ */
+        .bulk-results { margin-top: 1.5rem; display: none; }
+        .bulk-results.active { display: block; animation: fadeInUp 0.4s ease; }
+
+        .results-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .summary-card .summary-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .summary-card .summary-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-dim);
+            margin-top: 0.25rem;
+        }
+
+        .results-table-wrapper {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .results-table { width: 100%; border-collapse: collapse; }
+
+        .results-table th {
+            background: var(--surface3);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+        }
+
+        .results-table td {
+            padding: 0.6rem 1rem;
+            font-size: 0.8rem;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .results-table tr:last-child td { border-bottom: none; }
+        .results-table tr:hover td { background: rgba(255,255,255,0.015); }
+
+        .mini-bar {
+            width: 50px; height: 3px;
+            background: var(--surface2);
+            border-radius: 2px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 6px;
+        }
+
+        .mini-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+
+        .strengthen-btn {
+            padding: 3px 10px;
+            background: rgba(91,245,168,0.06);
+            border: 1px solid rgba(91,245,168,0.15);
+            border-radius: 5px;
+            color: var(--accent3);
+            font-size: 0.68rem;
+            font-family: 'Inter', sans-serif;
+            cursor: none;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .strengthen-btn:hover {
+            background: rgba(91,245,168,0.12);
+            border-color: rgba(91,245,168,0.3);
+        }
+
+        .strengthen-btn .material-symbols-rounded { font-size: 13px; }
+
+        .export-section {
+            margin-top: 1.25rem;
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .export-btn {
+            padding: 0.55rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.72rem;
+            cursor: none;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .export-btn:hover { border-color: var(--border-hover); color: var(--text); }
+        .export-btn .material-symbols-rounded { font-size: 15px; }
+
+        /* ═══════════════════════════════════════
+           MODAL
+        ═══════════════════════════════════════ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 9000;
+            display: none;
+            place-items: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.active {
+            display: grid;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 460px;
+            width: 100%;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.96) translateY(15px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-header h3 .material-symbols-rounded {
+            font-size: 20px;
+            color: var(--accent3);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: none;
+            padding: 4px;
+            transition: color 0.3s;
+            display: grid;
+            place-items: center;
+        }
+
+        .modal-close:hover { color: var(--text-dim); }
+
+        .modal p {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 1.25rem;
+        }
+
+        .strengthen-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .strengthen-option {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 0.85rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            cursor: none;
+            transition: border-color 0.3s;
+        }
+
+        .strengthen-option:hover { border-color: var(--border-hover); }
+
+        .check-box {
+            width: 16px; height: 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 4px;
+            display: grid;
+            place-items: center;
+            cursor: none;
+            transition: all 0.25s;
+            flex-shrink: 0;
+            color: transparent;
+            font-size: 11px;
+        }
+
+        .check-box.checked {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .strengthen-option label {
+            font-size: 0.78rem;
+            cursor: none;
+            color: var(--text-dim);
+        }
+
+        .strengthen-result {
+            padding: 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 0.75rem;
+            display: none;
+        }
+
+        .strengthen-result.active { display: block; animation: fadeInUp 0.25s ease; }
+
+        .strengthen-result .sr-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-dim);
+            margin-bottom: 0.25rem;
+        }
+
+        .strengthen-result .sr-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .strengthen-result .sr-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0.6rem 0;
+        }
+
+        /* ═══════════════════════════════════════
+           TOAST
+        ═══════════════════════════════════════ */
+        .copy-toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 9999;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--green);
+        }
+
+        .copy-toast .material-symbols-rounded { font-size: 16px; }
+
+        .copy-toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* ═══════════════════════════════════════
+           CHAR COLORS
+        ═══════════════════════════════════════ */
+        .char-upper { color: var(--cyan); }
+        .char-lower { color: var(--text); }
+        .char-digit { color: var(--yellow); }
+        .char-special { color: var(--accent2); }
+
+        /* ═══════════════════════════════════════
+           FOOTER
+        ═══════════════════════════════════════ */
+        .footer {
+            padding: 3.5rem 2rem;
+            text-align: center;
+        }
+
+        .footer-text {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.03em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .footer-text .material-symbols-rounded { font-size: 14px; }
+
+        /* ═══════════════════════════════════════
+           RESPONSIVE
+        ═══════════════════════════════════════ */
+        @media (max-width: 768px) {
+            .card-container { padding: 1.5rem; }
+            .metrics-grid { grid-template-columns: 1fr 1fr; }
+            .gen-options { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .gen-actions { flex-direction: column; }
+            .results-summary { grid-template-columns: 1fr 1fr; }
+            .hero-cta { flex-direction: column; align-items: center; }
+            .export-section { flex-wrap: wrap; }
+        }
+
+        @media (max-width: 480px) {
+            .metrics-grid { grid-template-columns: 1fr; }
+            .results-summary { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+<div id="cursorTrails"></div>
+
+<!-- Effects -->
+<div class="grain-overlay"></div>
+<div class="dot-matrix"></div>
+<div class="gradient-splash splash-1"></div>
+<div class="gradient-splash splash-2"></div>
+<div class="gradient-splash splash-3"></div>
+
+<!-- Navigation -->
+<nav class="nav" id="nav">
+    <div class="nav-logo">
+        <div class="logo-icon">
+            <span class="material-symbols-rounded icon-filled" style="font-size:16px;">shield_lock</span>
+        </div>
+        Fortress
+    </div>
+    <ul class="nav-links">
+        <li><a href="#analyzer" class="hoverable"><span class="material-symbols-rounded">search</span>Analyze</a></li>
+        <li><a href="#generator" class="hoverable"><span class="material-symbols-rounded">auto_awesome</span>Generate</a></li>
+        <li><a href="#bulk" class="hoverable"><span class="material-symbols-rounded">playlist_add_check</span>Bulk Test</a></li>
+    </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+    <div class="parallax-shape circle" style="top:15%;left:8%;" data-speed="0.03"></div>
+    <div class="parallax-shape square" style="top:55%;right:12%;" data-speed="0.05"></div>
+    <div class="parallax-shape cross" style="bottom:20%;left:18%;" data-speed="0.02"></div>
+
+    <div class="hero-badge">
+        <span class="dot"></span>
+        Password Security Tool
+    </div>
+    <h1 class="hero-title">
+        Password<br><span class="gradient-text">Fortress</span>
+    </h1>
+    <p class="hero-subtitle">
+        Analyze, generate, and strengthen your passwords with advanced metrics and beautiful visualizations.
+    </p>
+    <div class="hero-cta">
+        <a href="#analyzer"><button class="btn-primary hoverable">
+            <span class="material-symbols-rounded" style="font-size:18px;">search</span>
+            Analyze Now
+        </button></a>
+        <a href="#generator"><button class="btn-ghost hoverable">
+            <span class="material-symbols-rounded" style="font-size:18px;">auto_awesome</span>
+            Generate
+        </button></a>
+    </div>
+
+    <div class="scroll-indicator">
+        <div class="scroll-line"></div>
+        <span>Scroll</span>
+    </div>
+</section>
+
+<!-- Carousel -->
+<section class="horizontal-section">
+    <div class="section-header">
+        <div class="section-label"><span class="material-symbols-rounded">star</span>Features</div>
+        <div class="section-title">Everything you need</div>
+    </div>
+    <div class="carousel-track" id="carouselTrack">
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">query_stats</span></div>
+            <div class="feature-title">Deep Analysis</div>
+            <div class="feature-desc">Multi-metric scoring including entropy, pattern detection, and dictionary checks.</div>
+        </div>
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">bolt</span></div>
+            <div class="feature-title">Instant Scoring</div>
+            <div class="feature-desc">Real-time password strength evaluation with detailed breakdowns and suggestions.</div>
+        </div>
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">casino</span></div>
+            <div class="feature-title">Smart Generation</div>
+            <div class="feature-desc">Customizable password generator with pronounceability and memorability options.</div>
+        </div>
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">bar_chart</span></div>
+            <div class="feature-title">Bulk Testing</div>
+            <div class="feature-desc">Test multiple passwords at once via CSV, JSON, or paste. Export results easily.</div>
+        </div>
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">fitness_center</span></div>
+            <div class="feature-title">Auto Strengthen</div>
+            <div class="feature-desc">Automatically improve weak passwords while maintaining memorability.</div>
+        </div>
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">lock</span></div>
+            <div class="feature-title">100% Local</div>
+            <div class="feature-desc">All processing happens in your browser. Nothing is ever sent to a server.</div>
+        </div>
+        <!-- Duplicated for infinite scroll -->
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">query_stats</span></div>
+            <div class="feature-title">Deep Analysis</div>
+            <div class="feature-desc">Multi-metric scoring including entropy, pattern detection, and dictionary checks.</div>
+        </div>
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">bolt</span></div>
+            <div class="feature-title">Instant Scoring</div>
+            <div class="feature-desc">Real-time password strength evaluation with detailed breakdowns and suggestions.</div>
+        </div>
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">casino</span></div>
+            <div class="feature-title">Smart Generation</div>
+            <div class="feature-desc">Customizable password generator with pronounceability and memorability options.</div>
+        </div>
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">bar_chart</span></div>
+            <div class="feature-title">Bulk Testing</div>
+            <div class="feature-desc">Test multiple passwords at once via CSV, JSON, or paste. Export results easily.</div>
+        </div>
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">fitness_center</span></div>
+            <div class="feature-title">Auto Strengthen</div>
+            <div class="feature-desc">Automatically improve weak passwords while maintaining memorability.</div>
+        </div>
+        <div class="feature-card hoverable">
+            <div class="feature-icon"><span class="material-symbols-rounded">lock</span></div>
+            <div class="feature-title">100% Local</div>
+            <div class="feature-desc">All processing happens in your browser. Nothing is ever sent to a server.</div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Analyzer Section -->
+<section class="section" id="analyzer">
+    <div class="parallax-shape circle" style="top:5%;right:-3%;" data-speed="0.04"></div>
+    <div class="parallax-shape cross" style="bottom:8%;left:-2%;" data-speed="0.03"></div>
+
+    <div class="reveal">
+        <div class="section-label"><span class="material-symbols-rounded">search</span>Analyzer</div>
+        <div class="section-title">Test your password</div>
+        <div class="section-desc">Enter a password to get a comprehensive security analysis with actionable insights.</div>
+    </div>
+
+    <div class="card-container reveal">
+        <div class="password-input-wrapper">
+            <input type="password" class="password-input hoverable" id="passwordInput" placeholder="Enter your password..." autocomplete="off">
+            <button class="toggle-visibility hoverable" id="toggleVis" onclick="toggleVisibility()">
+                <span class="material-symbols-rounded" id="visIcon">visibility</span>
+            </button>
+        </div>
+        <button class="analyze-btn hoverable" onclick="analyzePassword()">
+            <span class="material-symbols-rounded" style="font-size:18px;">shield</span>
+            Analyze Password
+        </button>
+
+        <div class="results-panel" id="resultsPanel">
+            <div class="score-display">
+                <div class="score-circle-wrap">
+                    <svg viewBox="0 0 160 160" width="160" height="160">
+                        <circle class="score-circle-bg" cx="80" cy="80" r="70"/>
+                        <circle class="score-circle-fg" id="scoreCircle" cx="80" cy="80" r="70"
+                                stroke-dasharray="439.82" stroke-dashoffset="439.82"/>
+                    </svg>
+                    <div class="score-number" id="scoreNumber">0</div>
+                </div>
+                <div class="score-label">Security Score</div>
+            </div>
+
+            <div class="strength-bar-container">
+                <div class="strength-bar" id="strengthBar"></div>
+            </div>
+            <div class="strength-label" id="strengthLabel"></div>
+
+            <div class="metrics-grid" id="metricsGrid"></div>
+
+            <div class="pattern-warning" id="patternWarning">
+                <span class="material-symbols-rounded" style="font-size:16px;">warning</span>
+                <span id="patternWarningText"></span>
+            </div>
+
+            <div class="suggestions" id="suggestions"></div>
+
+            <div class="log-panel" id="logPanel">
+                <div class="log-title">
+                    <span class="live-dot"></span>
+                    Analysis Log
+                </div>
+                <div id="logEntries"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Generator Section -->
+<section class="section" id="generator">
+    <div class="parallax-shape square" style="top:5%;left:4%;" data-speed="0.05"></div>
+
+    <div class="reveal">
+        <div class="section-label"><span class="material-symbols-rounded">auto_awesome</span>Generator</div>
+        <div class="section-title">Create strong passwords</div>
+        <div class="section-desc">Generate cryptographically strong passwords with custom parameters and instant analysis.</div>
+    </div>
+
+    <div class="card-container accent3 reveal">
+        <div class="generated-password-display" id="genDisplay">
+            <span class="placeholder-text">Click generate to create a password</span>
+        </div>
+
+        <div class="gen-actions">
+            <button class="gen-btn primary hoverable" onclick="generatePassword()">
+                <span class="material-symbols-rounded">bolt</span> Generate
+            </button>
+            <button class="gen-btn hoverable" onclick="copyGenerated()">
+                <span class="material-symbols-rounded">content_copy</span> Copy
+            </button>
+            <button class="gen-btn hoverable" onclick="analyzeGenerated()">
+                <span class="material-symbols-rounded">search</span> Analyze
+            </button>
+        </div>
+
+        <div class="gen-options">
+            <div class="gen-option slider-option">
+                <div class="slider-header">
+                    <label>Length</label>
+                    <span class="slider-value" id="lengthValue">16</span>
+                </div>
+                <input type="range" class="custom-slider hoverable" id="lengthSlider" min="4" max="64" value="16" oninput="updateLength()">
+            </div>
+            <div class="gen-option">
+                <label>Uppercase</label>
+                <div class="toggle active hoverable" id="togUppercase" onclick="toggleOption(this)"></div>
+            </div>
+            <div class="gen-option">
+                <label>Lowercase</label>
+                <div class="toggle active hoverable" id="togLowercase" onclick="toggleOption(this)"></div>
+            </div>
+            <div class="gen-option">
+                <label>Numbers</label>
+                <div class="toggle active hoverable" id="togNumbers" onclick="toggleOption(this)"></div>
+            </div>
+            <div class="gen-option">
+                <label>Symbols</label>
+                <div class="toggle active hoverable" id="togSymbols" onclick="toggleOption(this)"></div>
+            </div>
+            <div class="gen-option">
+                <label>Avoid Ambiguous</label>
+                <div class="toggle hoverable" id="togAmbiguous" onclick="toggleOption(this)"></div>
+            </div>
+            <div class="gen-option">
+                <label>Pronounceable</label>
+                <div class="toggle hoverable" id="togPronounceable" onclick="toggleOption(this)"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Bulk Tester Section -->
+<section class="section" id="bulk">
+    <div class="parallax-shape circle" style="bottom:3%;right:-1%;" data-speed="0.03"></div>
+
+    <div class="reveal">
+        <div class="section-label"><span class="material-symbols-rounded">playlist_add_check</span>Bulk Tester</div>
+        <div class="section-title">Test multiple passwords</div>
+        <div class="section-desc">Upload or paste a list of passwords for batch analysis. Identify weak passwords and strengthen them.</div>
+    </div>
+
+    <div class="card-container accent2 reveal">
+        <div class="tab-nav">
+            <button class="tab-btn active hoverable" onclick="switchTab('paste')">
+                <span class="material-symbols-rounded">edit_note</span> Paste
+            </button>
+            <button class="tab-btn hoverable" onclick="switchTab('csv')">
+                <span class="material-symbols-rounded">table_chart</span> CSV
+            </button>
+            <button class="tab-btn hoverable" onclick="switchTab('json')">
+                <span class="material-symbols-rounded">data_object</span> JSON
+            </button>
+        </div>
+
+        <div class="tab-content active" id="tab-paste">
+            <textarea class="bulk-textarea hoverable" id="bulkPaste" placeholder="Enter one password per line...&#10;MyP@ssw0rd&#10;hunter2&#10;correcthorsebatterystaple"></textarea>
+        </div>
+
+        <div class="tab-content" id="tab-csv">
+            <div class="file-upload hoverable" onclick="document.getElementById('csvFile').click()">
+                <span class="material-symbols-rounded upload-icon">upload_file</span>
+                <div class="upload-text">Click to upload CSV file</div>
+                <div class="upload-formats">Expects one password per row, or a column named "password"</div>
+                <input type="file" id="csvFile" accept=".csv" onchange="handleCSV(this)">
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-json">
+            <div class="file-upload hoverable" onclick="document.getElementById('jsonFile').click()">
+                <span class="material-symbols-rounded upload-icon">data_object</span>
+                <div class="upload-text">Click to upload JSON file</div>
+                <div class="upload-formats">Expects array of strings or objects with "password" key</div>
+                <input type="file" id="jsonFile" accept=".json" onchange="handleJSON(this)">
+            </div>
+        </div>
+
+        <button class="analyze-btn hoverable" style="margin-top:1.25rem;" onclick="bulkAnalyze()">
+            <span class="material-symbols-rounded" style="font-size:18px;">playlist_add_check</span>
+            Analyze All Passwords
+        </button>
+
+        <div class="bulk-results" id="bulkResults">
+            <div class="results-summary" id="resultsSummary"></div>
+
+            <div class="results-table-wrapper">
+                <table class="results-table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Password</th>
+                        <th>Score</th>
+                        <th>Strength</th>
+                        <th>Entropy</th>
+                        <th>Crack Time</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="bulkTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="export-section">
+                <button class="export-btn hoverable" onclick="exportResults('csv')">
+                    <span class="material-symbols-rounded">download</span> Export CSV
+                </button>
+                <button class="export-btn hoverable" onclick="exportResults('json')">
+                    <span class="material-symbols-rounded">data_object</span> Export JSON
+                </button>
+                <button class="export-btn hoverable" onclick="strengthenAll()" style="color:var(--accent3);border-color:rgba(91,245,168,0.2);">
+                    <span class="material-symbols-rounded">fitness_center</span> Strengthen All Weak
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Strengthen Modal -->
+<div class="modal-overlay" id="strengthenModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3><span class="material-symbols-rounded">build</span> Strengthen Password</h3>
+            <button class="modal-close hoverable" onclick="closeModal()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <p>Select improvements to apply:</p>
+
+        <div class="strengthen-options">
+            <div class="strengthen-option hoverable" onclick="toggleCheck(this.querySelector('.check-box'))">
+                <div class="check-box checked"><span class="material-symbols-rounded" style="font-size:11px;">check</span></div>
+                <label>Add special characters</label>
+            </div>
+            <div class="strengthen-option hoverable" onclick="toggleCheck(this.querySelector('.check-box'))">
+                <div class="check-box checked"><span class="material-symbols-rounded" style="font-size:11px;">check</span></div>
+                <label>Mix letter cases</label>
+            </div>
+            <div class="strengthen-option hoverable" onclick="toggleCheck(this.querySelector('.check-box'))">
+                <div class="check-box checked"><span class="material-symbols-rounded" style="font-size:11px;">check</span></div>
+                <label>Add numbers</label>
+            </div>
+            <div class="strengthen-option hoverable" onclick="toggleCheck(this.querySelector('.check-box'))">
+                <div class="check-box"><span class="material-symbols-rounded" style="font-size:11px;">check</span></div>
+                <label>Extend length</label>
+            </div>
+            <div class="strengthen-option hoverable" onclick="toggleCheck(this.querySelector('.check-box'))">
+                <div class="check-box"><span class="material-symbols-rounded" style="font-size:11px;">check</span></div>
+                <label>Leet speak substitutions</label>
+            </div>
+        </div>
+
+        <button class="gen-btn primary hoverable" onclick="applyStrengthen()" style="width:100%;">
+            <span class="material-symbols-rounded">bolt</span> Apply & Strengthen
+        </button>
+
+        <div class="strengthen-result" id="strengthenResult">
+            <div class="sr-label">Original</div>
+            <div class="sr-value" id="origPassword"></div>
+            <div class="sr-divider"></div>
+            <div class="sr-label">Strengthened</div>
+            <div class="sr-value" id="improvedPassword" style="color:var(--accent3);"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="copy-toast" id="copyToast">
+    <span class="material-symbols-rounded icon-filled">check_circle</span>
+    <span id="toastMessage">Copied to clipboard</span>
+</div>
+
+<div class="divider"></div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-text">
+        <span class="material-symbols-rounded">lock</span>
+        Password Fortress — All analysis runs locally in your browser. Nothing leaves your device.
+    </div>
+</footer>
+
+<script>
+    // ══════════════════════════════════════════
+    // CURSOR
+    // ══════════════════════════════════════════
+    const cursor = document.getElementById('cursor');
+    const cursorDot = document.getElementById('cursorDot');
+    let mouseX = -100, mouseY = -100, cursorX = -100, cursorY = -100;
+
+    document.addEventListener('mousemove', e => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        cursorDot.style.left = mouseX + 'px';
+        cursorDot.style.top = mouseY + 'px';
+        cursor.classList.add('visible');
+        cursorDot.classList.add('visible');
+    });
+
+    document.addEventListener('mousedown', () => cursor.classList.add('clicking'));
+    document.addEventListener('mouseup', () => cursor.classList.remove('clicking'));
+    document.addEventListener('mouseleave', () => {
+        cursor.classList.remove('visible');
+        cursorDot.classList.remove('visible');
+    });
+
+    function animateCursor() {
+        cursorX += (mouseX - cursorX) * 0.14;
+        cursorY += (mouseY - cursorY) * 0.14;
+        cursor.style.left = cursorX + 'px';
+        cursor.style.top = cursorY + 'px';
+        requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    function attachHover() {
+        document.querySelectorAll('.hoverable').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+    }
+    attachHover();
+
+    // Cursor trails
+    const trailsEl = document.getElementById('cursorTrails');
+    const trails = [];
+    for (let i = 0; i < 6; i++) {
+        const t = document.createElement('div');
+        t.className = 'cursor-trail';
+        trailsEl.appendChild(t);
+        trails.push({ el: t, x: 0, y: 0 });
+    }
+    let trailT = 0;
+    document.addEventListener('mousemove', () => {
+        trailT++;
+        if (trailT % 4 === 0) {
+            const t = trails.shift();
+            t.x = mouseX; t.y = mouseY;
+            t.el.style.left = mouseX + 'px';
+            t.el.style.top = mouseY + 'px';
+            t.el.style.opacity = '0.3';
+            setTimeout(() => { t.el.style.opacity = '0'; }, 120);
+            trails.push(t);
+        }
+    });
+
+    // ══════════════════════════════════════════
+    // NAV SCROLL
+    // ══════════════════════════════════════════
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // ══════════════════════════════════════════
+    // REVEAL ON SCROLL
+    // ══════════════════════════════════════════
+    const ro = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+    // ══════════════════════════════════════════
+    // PARALLAX
+    // ══════════════════════════════════════════
+    window.addEventListener('scroll', () => {
+        const sy = window.scrollY;
+        document.querySelectorAll('.parallax-shape').forEach(s => {
+            const sp = parseFloat(s.dataset.speed) || 0.03;
+            const base = s.classList.contains('square') ? 'rotate(45deg)' : '';
+            s.style.transform = `${base} translateY(${sy * sp * 8}px)`;
+        });
+    });
+
+    // ══════════════════════════════════════════
+    // VISIBILITY TOGGLE
+    // ══════════════════════════════════════════
+    function toggleVisibility() {
+        const inp = document.getElementById('passwordInput');
+        const icon = document.getElementById('visIcon');
+        if (inp.type === 'password') { inp.type = 'text'; icon.textContent = 'visibility_off'; }
+        else { inp.type = 'password'; icon.textContent = 'visibility'; }
+    }
+
+    // ══════════════════════════════════════════
+    // DATA
+    // ══════════════════════════════════════════
+    const commonPasswords = [
+        'password','123456','123456789','qwerty','abc123','monkey','master','dragon','111111',
+        'baseball','iloveyou','trustno1','sunshine','ashley','football','shadow','123123','654321',
+        'superman','qazwsx','michael','password1','password123','admin','letmein','welcome','login',
+        'starwars','hunter2','passw0rd','1234','12345','1234567','12345678','1234567890',
+        'qwerty123','qwertyuiop','zxcvbnm','asdfghjkl','computer','internet','whatever','cheese',
+        'batman','soccer','charlie','access','thunder','hottie','princess','flower','hello',
+        'robert','ninja','mustang','loveme'
+    ];
+
+    const rareLetters = ['z','q','x','j','k','v','b','p','y','g'];
+
+    const keyboardRows = ['qwertyuiop','asdfghjkl','zxcvbnm','1234567890'];
+
+    const commonWords = [
+        'pass','word','love','sun','moon','star','fire','blue','red','green','black','white',
+        'king','queen','dragon','horse','battery','correct','staple','monkey','shadow','master',
+        'hunter','ninja','super','magic','lucky','happy','crazy','funny','brave','strong',
+        'sweet','cool','nice','summer','winter','spring','power','thunder','flash','light',
+        'dark','night','game','play','code','test','best','music','hello','world','admin',
+        'welcome','login','soccer','football','baseball','batman','princess','flower','charlie'
+    ];
+
+    function findWords(p) {
+        const l = p.toLowerCase();
+        const found = [];
+        for (const w of commonWords) if (w.length >= 3 && l.includes(w)) found.push(w);
+        return [...new Set(found.sort((a, b) => b.length - a.length))];
+    }
+
+    function hasKeyboardPattern(p, min = 4) {
+        const l = p.toLowerCase();
+        for (const row of keyboardRows)
+            for (let i = 0; i <= row.length - min; i++) {
+                const pat = row.substring(i, i + min);
+                if (l.includes(pat) || l.includes(pat.split('').reverse().join(''))) return true;
+            }
+        return false;
+    }
+
+    function calcEntropy(p) {
+        let cs = 0;
+        if (/[a-z]/.test(p)) cs += 26;
+        if (/[A-Z]/.test(p)) cs += 26;
+        if (/[0-9]/.test(p)) cs += 10;
+        if (/[^a-zA-Z0-9]/.test(p)) cs += 33;
+        return cs === 0 ? 0 : Math.round(p.length * Math.log2(cs) * 10) / 10;
+    }
+
+    function crackTime(entropy) {
+        const gps = 1e10;
+        const s = Math.pow(2, entropy) / gps / 2;
+        if (s < 1) return 'Instant';
+        if (s < 60) return Math.round(s) + 's';
+        if (s < 3600) return Math.round(s/60) + 'min';
+        if (s < 86400) return Math.round(s/3600) + 'hr';
+        if (s < 86400*365) return Math.round(s/86400) + 'd';
+        if (s < 86400*365*1e3) return Math.round(s/(86400*365)) + 'yr';
+        if (s < 86400*365*1e6) return Math.round(s/(86400*365*1e3)) + 'K yr';
+        if (s < 86400*365*1e9) return Math.round(s/(86400*365*1e6)) + 'M yr';
+        return 'centuries';
+    }
+
+    // ══════════════════════════════════════════
+    // ANALYSIS ENGINE
+    // ══════════════════════════════════════════
+    function fullAnalysis(password) {
+        const logs = [];
+        let score = 0;
+        const chars = password.split('');
+        const len = chars.length;
+        let uc=0, lc=0, dg=0, sp=0, rc=0;
+        const uniq = new Set(chars);
+
+        chars.forEach(c => {
+            if (/[A-Z]/.test(c)) uc++;
+            else if (/[a-z]/.test(c)) lc++;
+            else if (/[0-9]/.test(c)) dg++;
+            else sp++;
+            if (rareLetters.includes(c.toLowerCase())) rc++;
+        });
+
+        // Length
+        if (len >= 8) {
+            const p = Math.min(len*2, 30);
+            score += p;
+            logs.push({type:'gain', msg:`Length: ${len} characters`, pts:`+${p}`});
+        } else {
+            const p = (8-len)*5;
+            score -= p;
+            logs.push({type:'loss', msg:`Too short: ${len} characters`, pts:`-${p}`});
+        }
+
+        // Special
+        if (sp > 0) { score += sp*5; logs.push({type:'gain', msg:`Special characters: ${sp}`, pts:`+${sp*5}`}); }
+        if (sp > 4) { const p=(sp-4)*4; score-=p; logs.push({type:'loss', msg:`Excessive special chars: ${sp}`, pts:`-${p}`}); }
+
+        // Case
+        if (uc>0 && lc>0) { score+=10; logs.push({type:'gain', msg:'Mixed case detected', pts:'+10'}); }
+        if (uc>0) { score+=uc; logs.push({type:'gain', msg:`Uppercase: ${uc}`, pts:`+${uc}`}); }
+        if (lc>0) { const p=Math.round(lc*0.5); score+=p; logs.push({type:'info', msg:`Lowercase: ${lc}`, pts:`+${p}`}); }
+
+        // Numbers
+        if (dg>0) { score+=dg; logs.push({type:'gain', msg:`Numbers: ${dg}`, pts:`+${dg}`}); }
+        if (dg>4) { const p=(dg-4)*3; score-=p; logs.push({type:'loss', msg:`Excessive numbers: ${dg}`, pts:`-${p}`}); }
+
+        // Rare
+        if (rc>0) { score+=rc*3; logs.push({type:'gain', msg:`Rare letters: ${rc}`, pts:`+${rc*3}`}); }
+        if (rc>4) { const p=(rc-4)*2; score-=p; logs.push({type:'loss', msg:`Excessive rare chars: ${rc}`, pts:`-${p}`}); }
+
+        // Diversity
+        const ur = uniq.size / len;
+        if (ur > 0.7) { score+=10; logs.push({type:'gain', msg:`High diversity: ${Math.round(ur*100)}%`, pts:'+10'}); }
+        else if (ur < 0.4) { score-=10; logs.push({type:'loss', msg:`Low diversity: ${Math.round(ur*100)}%`, pts:'-10'}); }
+
+        // Entropy
+        const entropy = calcEntropy(password);
+        if (entropy > 60) { score+=15; logs.push({type:'gain', msg:`High entropy: ${entropy} bits`, pts:'+15'}); }
+        else if (entropy > 40) { score+=5; logs.push({type:'gain', msg:`Moderate entropy: ${entropy} bits`, pts:'+5'}); }
+        else { logs.push({type:'info', msg:`Low entropy: ${entropy} bits`, pts:'0'}); }
+
+        // Words
+        const words = findWords(password);
+        if (words.length > 0 && words.length <= 3) { score+=words.length*3; logs.push({type:'gain', msg:`Words found: ${words.join(', ')}`, pts:`+${words.length*3}`}); }
+        else if (words.length > 3) { score+=3; logs.push({type:'info', msg:`Many dictionary words: ${words.length}`, pts:'+3'}); }
+
+        // Long penalty
+        if (len > 15) { const p=Math.round(len*1.4-15); score-=p; logs.push({type:'loss', msg:'Length penalty (>15)', pts:`-${p}`}); }
+
+        // Common
+        if (commonPasswords.includes(password.toLowerCase())) { score-=50; logs.push({type:'loss', msg:'Common password detected!', pts:'-50'}); }
+
+        // Patterns
+        const patterns = [];
+        if (hasKeyboardPattern(password)) { score-=15; patterns.push('keyboard sequence'); logs.push({type:'loss', msg:'Keyboard pattern', pts:'-15'}); }
+        if (/(.)\1{2,}/.test(password)) { score-=10; patterns.push('repeated chars'); logs.push({type:'loss', msg:'Repeated characters', pts:'-10'}); }
+        if (/(?:012|123|234|345|456|567|678|789|890)/.test(password)) { score-=10; patterns.push('sequential numbers'); logs.push({type:'loss', msg:'Sequential numbers', pts:'-10'}); }
+
+        let finalScore = Math.min(Math.max(Math.round((Math.max(score,0)+2)*2), 0), 100);
+
+        let strength, strengthColor;
+        if (finalScore >= 80) { strength='Very Strong'; strengthColor='#34d399'; }
+        else if (finalScore >= 60) { strength='Strong'; strengthColor='#22d3ee'; }
+        else if (finalScore >= 40) { strength='Moderate'; strengthColor='#fbbf24'; }
+        else if (finalScore >= 20) { strength='Weak'; strengthColor='#fb923c'; }
+        else { strength='Very Weak'; strengthColor='#f87171'; }
+
+        const suggestions = [];
+        if (len<12) suggestions.push({text:'Use 12+ characters', color:'#fb923c'});
+        if (uc===0) suggestions.push({text:'Add uppercase', color:'#fbbf24'});
+        if (lc===0) suggestions.push({text:'Add lowercase', color:'#fbbf24'});
+        if (dg===0) suggestions.push({text:'Add numbers', color:'#fbbf24'});
+        if (sp===0) suggestions.push({text:'Add symbols', color:'#22d3ee'});
+        if (ur<0.5) suggestions.push({text:'More variety', color:'#fb923c'});
+        if (patterns.length) suggestions.push({text:'Avoid patterns', color:'#f87171'});
+        if (finalScore>=70) suggestions.push({text:'Looking good!', color:'#34d399'});
+
+        return {
+            score:finalScore, strength, strengthColor, entropy,
+            crackTime: crackTime(entropy), length:len,
+            uppercase:uc, lowercase:lc, digits:dg, special:sp,
+            rareCount:rc, uniqueChars:uniq.size, uniqueRatio:ur,
+            foundWords:words, patterns, suggestions, logs
+        };
+    }
+
+    // ══════════════════════════════════════════
+    // DISPLAY RESULTS
+    // ══════════════════════════════════════════
+    function animateValue(el, start, end, dur) {
+        const st = performance.now();
+        function upd(t) {
+            const p = Math.min((t-st)/dur, 1);
+            const e = 1 - Math.pow(1-p, 3);
+            el.textContent = Math.round(start + (end-start)*e);
+            if (p < 1) requestAnimationFrame(upd);
+        }
+        requestAnimationFrame(upd);
+    }
+
+    function analyzePassword() {
+        const pw = document.getElementById('passwordInput').value;
+        if (!pw) return;
+
+        const r = fullAnalysis(pw);
+        const panel = document.getElementById('resultsPanel');
+        panel.classList.add('active');
+
+        // Score circle
+        const scoreEl = document.getElementById('scoreNumber');
+        scoreEl.style.color = r.strengthColor;
+        animateValue(scoreEl, 0, r.score, 900);
+
+        const circle = document.getElementById('scoreCircle');
+        const circ = 2 * Math.PI * 70; // ~439.82
+        circle.style.stroke = r.strengthColor;
+        setTimeout(() => {
+            circle.style.strokeDashoffset = circ - (circ * r.score / 100);
+        }, 100);
+
+        // Bar
+        const bar = document.getElementById('strengthBar');
+        setTimeout(() => {
+            bar.style.width = r.score + '%';
+            bar.style.background = `linear-gradient(90deg, ${r.strengthColor}, ${r.strengthColor}88)`;
+        }, 100);
+
+        // Label
+        const label = document.getElementById('strengthLabel');
+        label.textContent = r.strength;
+        label.style.color = r.strengthColor;
+
+        // Metrics
+        const metricIcons = {
+            'Length':'straighten', 'Uppercase':'uppercase', 'Lowercase':'lowercase',
+            'Numbers':'pin', 'Symbols':'star', 'Entropy':'key',
+            'Crack Time':'timer', 'Diversity':'palette', 'Rare Letters':'diamond',
+            'Words Found':'menu_book'
+        };
+
+        const metrics = [
+            {name:'Length', value:r.length, detail:r.length>=12?'Good':'Too short', bar:Math.min(r.length/20*100,100), color:r.length>=12?'#34d399':'#fbbf24'},
+            {name:'Uppercase', value:r.uppercase, detail:r.uppercase>0?'Present':'Missing', bar:Math.min(r.uppercase/5*100,100), color:r.uppercase>0?'#34d399':'#f87171'},
+            {name:'Lowercase', value:r.lowercase, detail:r.lowercase>0?'Present':'Missing', bar:Math.min(r.lowercase/10*100,100), color:r.lowercase>0?'#34d399':'#f87171'},
+            {name:'Numbers', value:r.digits, detail:r.digits>0?(r.digits>4?'Excessive':'Good'):'Missing', bar:Math.min(r.digits/5*100,100), color:r.digits>0&&r.digits<=4?'#34d399':r.digits>4?'#fbbf24':'#f87171'},
+            {name:'Symbols', value:r.special, detail:r.special>0?(r.special>4?'Excessive':'Good'):'Missing', bar:Math.min(r.special/4*100,100), color:r.special>0&&r.special<=4?'#34d399':r.special>4?'#fbbf24':'#f87171'},
+            {name:'Entropy', value:r.entropy.toFixed(1), detail:r.entropy>60?'Strong':r.entropy>40?'OK':'Low', bar:Math.min(r.entropy/80*100,100), color:r.entropy>60?'#34d399':r.entropy>40?'#fbbf24':'#f87171'},
+            {name:'Crack Time', value:r.crackTime, detail:'10B guesses/s', bar:Math.min(r.entropy/80*100,100), color:r.entropy>60?'#34d399':'#fbbf24'},
+            {name:'Diversity', value:Math.round(r.uniqueRatio*100)+'%', detail:`${r.uniqueChars} unique`, bar:r.uniqueRatio*100, color:r.uniqueRatio>0.7?'#34d399':r.uniqueRatio>0.4?'#fbbf24':'#f87171'},
+            {name:'Rare Letters', value:r.rareCount, detail:'z,q,x,j,k,v,b,p,y,g', bar:Math.min(r.rareCount/4*100,100), color:r.rareCount>0?'#22d3ee':'#444'},
+            {name:'Words Found', value:r.foundWords.length, detail:r.foundWords.slice(0,3).join(', ')||'None', bar:Math.min(r.foundWords.length/3*100,100), color:r.foundWords.length>0?'#7c5bf5':'#444'},
+        ];
+
+        const grid = document.getElementById('metricsGrid');
+        grid.innerHTML = '';
+        metrics.forEach((m, i) => {
+            const card = document.createElement('div');
+            card.className = 'metric-card hoverable';
+            card.innerHTML = `
+                <div class="metric-header">
+                    <span class="material-symbols-rounded" style="color:${m.color}">${metricIcons[m.name]||'info'}</span>
+                    <span class="metric-name">${m.name}</span>
+                </div>
+                <div class="metric-value">${m.value}</div>
+                <div class="metric-detail">${m.detail}</div>
+                <div class="metric-bar"><div class="metric-bar-fill" style="width:${m.bar}%;background:${m.color};"></div></div>
+            `;
+            grid.appendChild(card);
+        });
+
+        // Patterns
+        const warnEl = document.getElementById('patternWarning');
+        if (r.patterns.length > 0) {
+            warnEl.classList.add('active');
+            document.getElementById('patternWarningText').textContent = 'Patterns detected: ' + r.patterns.join(', ');
+        } else warnEl.classList.remove('active');
+
+        // Suggestions
+        const sugEl = document.getElementById('suggestions');
+        sugEl.innerHTML = '';
+        r.suggestions.forEach(s => {
+            sugEl.innerHTML += `<div class="suggestion-chip"><span class="chip-dot" style="background:${s.color}"></span>${s.text}</div>`;
+        });
+
+        // Logs
+        const logEl = document.getElementById('logEntries');
+        logEl.innerHTML = '';
+        r.logs.forEach((l, i) => {
+            setTimeout(() => {
+                const e = document.createElement('div');
+                e.className = 'log-entry';
+                const pc = l.type==='gain'?'var(--green)':l.type==='loss'?'var(--red)':'var(--accent)';
+                e.innerHTML = `
+                    <span class="log-type ${l.type}">${l.type}</span>
+                    <span class="log-message">${l.msg}</span>
+                    <span class="log-points" style="color:${pc}">${l.pts}</span>
+                `;
+                logEl.appendChild(e);
+            }, i * 50);
+        });
+
+        attachHover();
+        setTimeout(() => panel.scrollIntoView({behavior:'smooth', block:'start'}), 200);
+    }
+
+    document.getElementById('passwordInput').addEventListener('keydown', e => { if (e.key==='Enter') analyzePassword(); });
+
+    // ══════════════════════════════════════════
+    // GENERATOR
+    // ══════════════════════════════════════════
+    function updateLength() {
+        document.getElementById('lengthValue').textContent = document.getElementById('lengthSlider').value;
+    }
+
+    function toggleOption(el) { el.classList.toggle('active'); }
+
+    let currentGenerated = '';
+
+    function generatePassword() {
+        const len = parseInt(document.getElementById('lengthSlider').value);
+        const useU = document.getElementById('togUppercase').classList.contains('active');
+        const useL = document.getElementById('togLowercase').classList.contains('active');
+        const useN = document.getElementById('togNumbers').classList.contains('active');
+        const useS = document.getElementById('togSymbols').classList.contains('active');
+        const noAmb = document.getElementById('togAmbiguous').classList.contains('active');
+        const pron = document.getElementById('togPronounceable').classList.contains('active');
+
+        if (pron) { displayGen(genPronounceable(len, useU, useN, useS)); return; }
+
+        let cs = '';
+        if (useL) cs += noAmb ? 'abcdefghjkmnpqrstuvwxyz' : 'abcdefghijklmnopqrstuvwxyz';
+        if (useU) cs += noAmb ? 'ABCDEFGHJKMNPQRSTUVWXYZ' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        if (useN) cs += noAmb ? '23456789' : '0123456789';
+        if (useS) cs += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        if (!cs) cs = 'abcdefghijklmnopqrstuvwxyz';
+
+        let pwd = '';
+        const arr = new Uint32Array(len);
+        crypto.getRandomValues(arr);
+        for (let i=0; i<len; i++) pwd += cs[arr[i] % cs.length];
+        displayGen(pwd);
+    }
+
+    function genPronounceable(len, useU, useN, useS) {
+        const cons='bcdfghjklmnprstvwz', vow='aeiou';
+        let p='';
+        for (let i=0;i<len;i++) p+=i%2===0?cons[Math.floor(Math.random()*cons.length)]:vow[Math.floor(Math.random()*vow.length)];
+        if (useU) { const i=Math.floor(Math.random()*p.length); p=p.substring(0,i)+p[i].toUpperCase()+p.substring(i+1); }
+        if (useN) p=p.substring(0,p.length-2)+Math.floor(Math.random()*90+10);
+        if (useS) { const s='!@#$%&*'; p+=s[Math.floor(Math.random()*s.length)]; }
+        return p.substring(0,len);
+    }
+
+    function displayGen(pwd) {
+        currentGenerated = pwd;
+        const d = document.getElementById('genDisplay');
+        d.innerHTML = '';
+        pwd.split('').forEach((c, i) => {
+            setTimeout(() => {
+                let cls='char-lower';
+                if (/[A-Z]/.test(c)) cls='char-upper';
+                else if (/[0-9]/.test(c)) cls='char-digit';
+                else if (/[^a-zA-Z0-9]/.test(c)) cls='char-special';
+                const s = document.createElement('span');
+                s.className = cls;
+                s.textContent = c;
+                s.style.opacity = '0';
+                s.style.transition = 'opacity 0.15s';
+                d.appendChild(s);
+                requestAnimationFrame(() => s.style.opacity = '1');
+            }, i * 25);
+        });
+    }
+
+    function copyGenerated() {
+        if (!currentGenerated) return;
+        navigator.clipboard.writeText(currentGenerated);
+        showToast('Copied to clipboard');
+    }
+
+    function analyzeGenerated() {
+        if (!currentGenerated) return;
+        document.getElementById('passwordInput').value = currentGenerated;
+        document.getElementById('analyzer').scrollIntoView({behavior:'smooth'});
+        setTimeout(analyzePassword, 500);
+    }
+
+    // ══════════════════════════════════════════
+    // BULK TESTER
+    // ══════════════════════════════════════════
+    let bulkData = [];
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach((b, i) => {
+            b.classList.remove('active');
+            if ((tab==='paste'&&i===0)||(tab==='csv'&&i===1)||(tab==='json'&&i===2)) b.classList.add('active');
+        });
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-'+tab).classList.add('active');
+    }
+
+    function handleCSV(input) {
+        const f = input.files[0]; if (!f) return;
+        const r = new FileReader();
+        r.onload = e => {
+            const lines = e.target.result.split('\n');
+            const hdr = lines[0].toLowerCase();
+            const pi = hdr.split(',').findIndex(h => h.trim().includes('password'));
+            const pws = [];
+            for (let i=(pi>=0?1:0); i<lines.length; i++) {
+                const l = lines[i].trim(); if (!l) continue;
+                if (pi>=0) { const cols=l.split(','); if(cols[pi]) pws.push(cols[pi].trim().replace(/^["']|["']$/g,'')); }
+                else pws.push(l.split(',')[0].trim().replace(/^["']|["']$/g,''));
+            }
+            switchTab('paste');
+            document.getElementById('bulkPaste').value = pws.join('\n');
+        };
+        r.readAsText(f);
+    }
+
+    function handleJSON(input) {
+        const f = input.files[0]; if (!f) return;
+        const r = new FileReader();
+        r.onload = e => {
+            try {
+                const d = JSON.parse(e.target.result);
+                const pws = [];
+                if (Array.isArray(d)) d.forEach(x => { if (typeof x==='string') pws.push(x); else if (x.password) pws.push(x.password); });
+                switchTab('paste');
+                document.getElementById('bulkPaste').value = pws.join('\n');
+            } catch { showToast('Invalid JSON file'); }
+        };
+        r.readAsText(f);
+    }
+
+    function bulkAnalyze() {
+        const pws = document.getElementById('bulkPaste').value.split('\n').map(p=>p.trim()).filter(p=>p.length>0);
+        if (!pws.length) return;
+
+        bulkData = [];
+        const tbody = document.getElementById('bulkTableBody');
+        tbody.innerHTML = '';
+
+        let weak=0, moderate=0, strong=0;
+
+        pws.forEach((pw, i) => {
+            const r = fullAnalysis(pw);
+            bulkData.push({password:pw, ...r});
+
+            if (r.score < 40) weak++;
+            else if (r.score < 70) moderate++;
+            else strong++;
+
+            const masked = pw.length <= 4 ? '****' : pw.substring(0,2) + '\u2022'.repeat(Math.max(pw.length-4,1)) + pw.substring(pw.length-2);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="color:var(--text-dim);">${i+1}</td>
+                <td title="${pw}">${masked}</td>
+                <td><span style="color:${r.strengthColor};font-weight:700;">${r.score}</span>
+                    <span class="mini-bar"><span class="mini-bar-fill" style="width:${r.score}%;background:${r.strengthColor};"></span></span></td>
+                <td style="color:${r.strengthColor};font-size:0.72rem;font-family:'Inter',sans-serif;">${r.strength}</td>
+                <td style="color:var(--text-dim);">${r.entropy.toFixed(1)}</td>
+                <td style="color:var(--text-dim);font-size:0.72rem;">${r.crackTime}</td>
+                <td><button class="strengthen-btn hoverable" onclick="openStrengthen(${i})">
+                    <span class="material-symbols-rounded">fitness_center</span>Fix</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Summary
+        const sum = document.getElementById('resultsSummary');
+        sum.innerHTML = `
+            <div class="summary-card"><div class="summary-value">${pws.length}</div><div class="summary-label">Total</div></div>
+            <div class="summary-card"><div class="summary-value" style="color:var(--green)">${strong}</div><div class="summary-label">Strong</div></div>
+            <div class="summary-card"><div class="summary-value" style="color:var(--yellow)">${moderate}</div><div class="summary-label">Moderate</div></div>
+            <div class="summary-card"><div class="summary-value" style="color:var(--red)">${weak}</div><div class="summary-label">Weak</div></div>
+        `;
+
+        document.getElementById('bulkResults').classList.add('active');
+        attachHover();
+    }
+
+    // ══════════════════════════════════════════
+    // STRENGTHEN
+    // ══════════════════════════════════════════
+    let currentStrIdx = -1;
+
+    function openStrengthen(i) {
+        currentStrIdx = i;
+        document.getElementById('strengthenModal').classList.add('active');
+        document.getElementById('strengthenResult').classList.remove('active');
+    }
+
+    function closeModal() { document.getElementById('strengthenModal').classList.remove('active'); }
+
+    document.getElementById('strengthenModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('strengthenModal')) closeModal();
+    });
+
+    function toggleCheck(el) { if(el) el.classList.toggle('checked'); }
+
+    function applyStrengthen() {
+        if (currentStrIdx < 0) return;
+        const d = bulkData[currentStrIdx];
+        let pwd = d.password || '';
+
+        const checks = document.querySelectorAll('#strengthenModal .check-box');
+        const addSp = checks[0].classList.contains('checked');
+        const mixC = checks[1].classList.contains('checked');
+        const addN = checks[2].classList.contains('checked');
+        const extL = checks[3].classList.contains('checked');
+        const leet = checks[4].classList.contains('checked');
+
+        let imp = pwd;
+        const leetMap = {a:'@',e:'3',i:'!',o:'0',s:'$',t:'7',l:'1'};
+
+        if (leet) imp = imp.split('').map(c => Math.random()>0.5 && leetMap[c.toLowerCase()] ? leetMap[c.toLowerCase()] : c).join('');
+        if (mixC && imp===imp.toLowerCase()) imp = imp.split('').map((c,i) => i%3===0 && /[a-z]/.test(c) ? c.toUpperCase() : c).join('');
+        if (addN && !/[0-9]/.test(imp)) imp += Math.floor(Math.random()*900+100);
+        if (addSp && !/[^a-zA-Z0-9]/.test(imp)) { const s='!@#$%^&*'; imp = s[Math.floor(Math.random()*s.length)] + imp + s[Math.floor(Math.random()*s.length)]; }
+        if (extL && imp.length < 16) { const c='abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$%'; while(imp.length<16) imp+=c[Math.floor(Math.random()*c.length)]; }
+
+        document.getElementById('origPassword').textContent = pwd;
+        document.getElementById('improvedPassword').textContent = imp;
+        document.getElementById('strengthenResult').classList.add('active');
+        bulkData[currentStrIdx].strengthened = imp;
+    }
+
+    function strengthenAll() {
+        let count = 0;
+        bulkData.forEach(d => {
+            if (d.score < 50) {
+                let p = d.password;
+                const lm = {a:'@',e:'3',i:'!',o:'0',s:'$',t:'7'};
+                let imp = p.split('').map((c,j) => {
+                    if (j%4===0 && lm[c.toLowerCase()]) return lm[c.toLowerCase()];
+                    if (j%3===0 && /[a-z]/.test(c)) return c.toUpperCase();
+                    return c;
+                }).join('');
+                if (!/[0-9]/.test(imp)) imp += Math.floor(Math.random()*900+100);
+                if (!/[^a-zA-Z0-9]/.test(imp)) imp += '!#';
+                const ex='kxzJQVp'; while(imp.length<14) imp += ex[Math.floor(Math.random()*ex.length)];
+                d.strengthened = imp;
+                count++;
+            }
+        });
+        showToast(`${count} weak passwords strengthened`);
+    }
+
+    // ══════════════════════════════════════════
+    // EXPORT
+    // ══════════════════════════════════════════
+    function exportResults(fmt) {
+        if (!bulkData.length) return;
+        let content, fn, type;
+        if (fmt==='csv') {
+            content = 'Password,Score,Strength,Entropy,CrackTime,Strengthened\n';
+            bulkData.forEach(r => content += `"${r.password}",${r.score},"${r.strength}",${r.entropy.toFixed(1)},"${r.crackTime}","${r.strengthened||''}"\n`);
+            fn = 'password-analysis.csv'; type = 'text/csv';
+        } else {
+            content = JSON.stringify(bulkData.map(r => ({password:r.password,score:r.score,strength:r.strength,entropy:r.entropy,crackTime:r.crackTime,strengthened:r.strengthened||null})),null,2);
+            fn = 'password-analysis.json'; type = 'application/json';
+        }
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([content],{type}));
+        a.download = fn; a.click();
+        showToast('File exported');
+    }
+
+    // ══════════════════════════════════════════
+    // TOAST
+    // ══════════════════════════════════════════
+    function showToast(msg) {
+        const t = document.getElementById('copyToast');
+        document.getElementById('toastMessage').textContent = msg || 'Copied to clipboard';
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2200);
+    }
+</script>
+</body>
+</html>
